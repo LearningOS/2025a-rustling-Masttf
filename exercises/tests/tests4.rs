@@ -5,7 +5,6 @@
 // Execute `rustlings hint tests4` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
 
 struct Rectangle {
     width: i32,
