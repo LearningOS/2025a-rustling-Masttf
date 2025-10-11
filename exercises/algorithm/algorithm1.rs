@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -69,14 +68,95 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+	pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self
+	where
+		T: PartialOrd,
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+		if list_a.length == 0 {
+            return list_b;
         }
+        if list_b.length == 0 {
+            return list_a;
+        }
+
+        let mut result = LinkedList::new();
+        let mut a = list_a.start;
+        let mut b = list_b.start;
+
+        // 合并两个有序链表
+        while a.is_some() && b.is_some() {
+            let a_val = unsafe { &(*a.unwrap().as_ptr()).val };
+            let b_val = unsafe { &(*b.unwrap().as_ptr()).val };
+
+            if a_val <= b_val {
+                // 取 a 链表的节点
+                let a_node = a.unwrap();
+                a = unsafe { (*a_node.as_ptr()).next };
+
+                // 将节点添加到结果链表
+                let node_ptr = Some(a_node);
+                unsafe { (*a_node.as_ptr()).next = None };
+
+                match result.end {
+                    None => result.start = node_ptr,
+                    Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr },
+                }
+                result.end = node_ptr;
+                result.length += 1;
+            } else {
+                // 取 b 链表的节点
+                let b_node = b.unwrap();
+                b = unsafe { (*b_node.as_ptr()).next };
+
+                // 将节点添加到结果链表
+                let node_ptr = Some(b_node);
+                unsafe { (*b_node.as_ptr()).next = None };
+
+                match result.end {
+                    None => result.start = node_ptr,
+                    Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr },
+                }
+                result.end = node_ptr;
+                result.length += 1;
+            }
+        }
+
+        // 添加剩余的节点
+        while let Some(node) = a {
+            a = unsafe { (*node.as_ptr()).next };
+
+            let node_ptr = Some(node);
+            unsafe { (*node.as_ptr()).next = None };
+
+            match result.end {
+                None => result.start = node_ptr,
+                Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr },
+            }
+            result.end = node_ptr;
+            result.length += 1;
+        }
+
+        while let Some(node) = b {
+            b = unsafe { (*node.as_ptr()).next };
+
+            let node_ptr = Some(node);
+            unsafe { (*node.as_ptr()).next = None };
+
+            match result.end {
+                None => result.start = node_ptr,
+                Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr },
+            }
+            result.end = node_ptr;
+            result.length += 1;
+        }
+
+        // 重要：将原链表的 start 和 end 设置为 None，避免重复释放内存
+        // 由于 list_a 和 list_b 被 move 到函数中，它们会在函数结束时被 drop
+        // 但是我们已经将它们的节点转移到了 result 中，所以需要避免重复释放
+        std::mem::forget(list_a);
+        std::mem::forget(list_b);
+
+        result
 	}
 }
 
@@ -135,7 +215,7 @@ mod tests {
 		let vec_a = vec![1,3,5,7];
 		let vec_b = vec![2,4,6,8];
 		let target_vec = vec![1,2,3,4,5,6,7,8];
-		
+
 		for i in 0..vec_a.len(){
 			list_a.add(vec_a[i]);
 		}
