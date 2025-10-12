@@ -3,7 +3,6 @@
 	This question requires you to use a stack to achieve a bracket match
 */
 
-// I AM NOT DONE
 #[derive(Debug)]
 struct Stack<T> {
 	size: usize,
@@ -31,8 +30,11 @@ impl<T> Stack<T> {
 		self.size += 1;
 	}
 	fn pop(&mut self) -> Option<T> {
-		// TODO
-		None
+        if self.is_empty() {
+			return None;
+		}
+		self.size -= 1;
+		self.data.pop()
 	}
 	fn peek(&self) -> Option<&T> {
 		if 0 == self.size {
@@ -50,8 +52,8 @@ impl<T> Stack<T> {
 		IntoIter(self)
 	}
 	fn iter(&self) -> Iter<T> {
-		let mut iterator = Iter { 
-			stack: Vec::new() 
+		let mut iterator = Iter {
+			stack: Vec::new()
 		};
 		for item in self.data.iter() {
 			iterator.stack.push(item);
@@ -59,8 +61,8 @@ impl<T> Stack<T> {
 		iterator
 	}
 	fn iter_mut(&mut self) -> IterMut<T> {
-		let mut iterator = IterMut { 
-			stack: Vec::new() 
+		let mut iterator = IterMut {
+			stack: Vec::new()
 		};
 		for item in self.data.iter_mut() {
 			iterator.stack.push(item);
@@ -74,7 +76,7 @@ impl<T: Clone> Iterator for IntoIter<T> {
 	fn next(&mut self) -> Option<Self::Item> {
 		if !self.0.is_empty() {
 			self.0.size -= 1;self.0.data.pop()
-		} 
+		}
 		else {
 			None
 		}
@@ -101,14 +103,52 @@ impl<'a, T> Iterator for IterMut<'a, T> {
 
 fn bracket_match(bracket: &str) -> bool
 {
-	//TODO
-	true
+	let mut stack = Stack::new();
+	for x in bracket.chars() {
+		if x == '(' || x == '{' || x == '[' {
+			stack.push(x);
+		} else if x == ')' {
+			match stack.pop() {
+				None => {
+					return false;
+				},
+				Some(y) => {
+					if y != '(' {
+						return false;
+					}
+				}
+			}
+		} else if x == ']' {
+			match stack.pop() {
+				None => {
+					return false;
+				},
+				Some(y) => {
+					if y != '[' {
+						return false;
+					}
+				}
+			}
+		} else if x == '}' {
+			match stack.pop() {
+				None => {
+					return false;
+				},
+				Some(y) => {
+					if y != '{' {
+						return false;
+					}
+				}
+			}
+		}
+	}
+	stack.is_empty()
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
-	
+
 	#[test]
 	fn bracket_matching_1(){
 		let s = "(2+3){func}[abc]";

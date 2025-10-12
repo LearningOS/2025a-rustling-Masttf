@@ -30,6 +30,15 @@ impl Graph for UndirectedGraph {
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
+		let map = self.adjacency_table_mutable();
+		if !map.contains_key(edge.0) {
+			map.insert(String::from(edge.0), Vec::new());
+		}
+		if !map.contains_key(edge.1) {
+			map.insert(String::from(edge.1), Vec::new());
+		}
+		map.get_mut(edge.0).unwrap().push((String::from(edge.1), edge.2));
+		map.get_mut(edge.1).unwrap().push((String::from(edge.0), edge.2));
     }
 }
 pub trait Graph {
@@ -37,8 +46,13 @@ pub trait Graph {
     fn adjacency_table_mutable(&mut self) -> &mut HashMap<String, Vec<(String, i32)>>;
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
-        //TODO
-		true
+        let map = self.adjacency_table_mutable();
+		if map.contains_key(node) {
+			false
+		} else {
+			map.insert(String::from(node), Vec::new());
+			true
+		}
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
         //TODO
